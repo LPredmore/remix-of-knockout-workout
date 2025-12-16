@@ -1,56 +1,109 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Home, BarChart2, PlusCircle, Layers } from 'lucide-react';
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, PlusSquare, Settings, LogOut, Menu, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface LayoutProps {
   children: React.ReactNode;
-  showNav?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, showNav = true }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
-    <div className="flex flex-col h-full bg-brand-900 text-slate-100 max-w-md mx-auto relative shadow-2xl overflow-hidden">
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-20">
-        {children}
-      </main>
+    <div className="min-h-screen bg-background text-text flex flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-surface border-b border-border p-4 flex justify-between items-center sticky top-0 z-30">
+        <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            ViralArc
+        </h1>
+        <button onClick={toggleSidebar} className="text-text">
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
 
-      {/* Bottom Navigation */}
-      {showNav && (
-        <nav className="absolute bottom-0 left-0 right-0 bg-brand-800 border-t border-brand-600 h-16 flex items-center justify-around px-2 z-50">
-          <NavLink 
-            to="/" 
-            className={({ isActive }) => `flex flex-col items-center p-2 ${isActive ? 'text-accent-500' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            <Home size={24} />
-            <span className="text-[10px] mt-1 font-medium">Home</span>
-          </NavLink>
-
-          <NavLink 
-            to="/library" 
-            className={({ isActive }) => `flex flex-col items-center p-2 ${isActive ? 'text-accent-500' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            <PlusCircle size={24} />
-            <span className="text-[10px] mt-1 font-medium">Extra</span>
-          </NavLink>
-
-          <NavLink 
-            to="/progress" 
-            className={({ isActive }) => `flex flex-col items-center p-2 ${isActive ? 'text-accent-500' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            <BarChart2 size={24} />
-            <span className="text-[10px] mt-1 font-medium">Progress</span>
-          </NavLink>
-
-          <NavLink 
-            to="/routines" 
-            className={({ isActive }) => `flex flex-col items-center p-2 ${isActive ? 'text-accent-500' : 'text-slate-400 hover:text-slate-200'}`}
-          >
-            <Layers size={24} />
-            <span className="text-[10px] mt-1 font-medium">Routines</span>
-          </NavLink>
-        </nav>
+      {/* Sidebar Overlay (Mobile) */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
       )}
+
+      {/* Sidebar */}
+      <aside 
+        className={`
+          fixed md:sticky top-0 h-full w-64 bg-surface border-r border-border flex-shrink-0 flex flex-col z-40 transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+        `}
+      >
+        <div className="p-6 border-b border-border hidden md:block">
+          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            ViralArc
+          </h1>
+        </div>
+        
+        <nav className="flex-1 p-4 space-y-2">
+          <Link 
+            to="/" 
+            onClick={() => setIsSidebarOpen(false)}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              isActive('/') ? 'bg-primary/20 text-primary' : 'hover:bg-surfaceHighlight text-textMuted hover:text-text'
+            }`}
+          >
+            <Home size={20} />
+            <span>Library</span>
+          </Link>
+          
+          <Link 
+            to="/create" 
+            onClick={() => setIsSidebarOpen(false)}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              isActive('/create') ? 'bg-primary/20 text-primary' : 'hover:bg-surfaceHighlight text-textMuted hover:text-text'
+            }`}
+          >
+            <PlusSquare size={20} />
+            <span>Create New</span>
+          </Link>
+          
+          <Link 
+            to="/settings" 
+            onClick={() => setIsSidebarOpen(false)}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+              isActive('/settings') ? 'bg-primary/20 text-primary' : 'hover:bg-surfaceHighlight text-textMuted hover:text-text'
+            }`}
+          >
+            <Settings size={20} />
+            <span>Settings</span>
+          </Link>
+        </nav>
+
+        <div className="p-4 border-t border-border">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center space-x-3 px-4 py-3 w-full rounded-lg text-textMuted hover:bg-red-500/10 hover:text-red-400 transition-colors"
+          >
+            <LogOut size={20} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+        <div className="max-w-5xl mx-auto">
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

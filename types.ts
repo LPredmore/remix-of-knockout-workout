@@ -1,90 +1,127 @@
-export enum MuscleGroup {
-  Chest = 'Chest',
-  Back = 'Back',
-  Abs = 'Abs',
-  Shoulders = 'Shoulders',
-  Biceps = 'Biceps',
-  Triceps = 'Triceps',
-  Legs = 'Legs',
-  Calves = 'Calves',
+
+export enum ContentType {
+  QUOTE = 'quote',
+  PROVERB = 'proverb',
+  RESEARCH = 'research',
+  QUESTIONING = 'questioning'
 }
 
-export enum Equipment {
-  BodyWeight = 'BodyWeight',
-  Dumbbells = 'Dumbbells',
-  Barbells = 'Barbells',
-  Cable = 'Cable',
-  Bands = 'Bands',
-  Kettlebell = 'Kettlebell',
+export enum PostStatus {
+  DRAFT = 'draft',
+  APPROVED = 'approved'
 }
 
-export enum SessionStatus {
-  InProgress = 'in_progress',
-  Completed = 'completed',
+export enum ImageMode {
+  SINGLE = 'single',
+  PER_SLIDE = 'per_slide'
 }
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  rep_min: number;
-  rep_max: number;
-  onboarding_completed_at: string | null;
-  active_routine_id: string | null;
+export type GuardrailsStrictness = 'Standard' | 'Strict';
+
+export enum AllowedTechnique {
+  CURIOSITY = 'curiosity',
+  ACTION_STEPS = 'action_steps',
+  IDENTITY_ENCOURAGEMENT = 'identity_encouragement',
+  CONTRAST_EVIDENCE_BASED = 'contrast_evidence_based',
+  NARRATIVE_TENSION = 'narrative_tension',
+  NON_FABRICATED_SOCIAL_PROOF = 'non_fabricated_social_proof'
 }
 
-export interface Exercise {
-  id: string;
-  name: string;
-  muscle_group: MuscleGroup;
-  equipment: Equipment;
-  is_curated: boolean;
-  created_by?: string;
-  is_favorite?: boolean; // UI helper
+export enum BlockedTactic {
+  FABRICATED_RESEARCH = 'fabricated_research',
+  MEDICAL_DIAGNOSIS_OR_GUARANTEES = 'medical_diagnosis_or_guarantees',
+  SHAMING_OR_HARASSMENT = 'shaming_or_harassment',
+  GROUP_CONTEMPT = 'group_contempt',
+  RAGE_BAIT = 'rage_bait',
+  ABSOLUTIST_UNCERTAINTY = 'absolutist_uncertainty',
+  FEARMONGERING = 'fearmongering',
+  FAKE_SOURCE_BAIT = 'fake_source_bait'
 }
 
-export interface RoutineDay {
-  id: string;
-  routine_id: string;
-  title: string;
-  muscle_group: MuscleGroup;
-  exercise_id: string;
-  planned_sets: number;
-  sort_order: number;
+export interface UserSettings {
+  id?: string;
+  user_id: string;
+  global_rules: string;
+  default_target_audience: string;
+  image_mode: ImageMode;
+  
+  // Guardrails
+  guardrails_enabled: boolean;
+  guardrails_strictness: GuardrailsStrictness;
+  brand_boundaries: string;
+  allowed_techniques: string[];
+  blocked_tactics: string[];
+
+  // Image Styles
+  quotes_image_style_single: string;
+  quotes_image_style_per_slide: string;
+  proverbs_image_style_single: string;
+  proverbs_image_style_per_slide: string;
+  research_image_style_single: string;
+  research_image_style_per_slide: string;
+  questioning_image_style_single: string;
+  questioning_image_style_per_slide: string;
+
+  // Legacy Character Limits (kept for type safety, but UI will use ArcRules)
+  quotes_char_limit?: number;
+  proverbs_char_limit?: number;
+  research_char_limit?: number;
+  questioning_char_limit?: number;
 }
 
-export interface Routine {
+export interface ArcRules {
+  id?: number;
+  user_id: string;
+  slide_1: string;
+  slide_2: string;
+  slide_3: string;
+  slide_4: string;
+  slide_5: string;
+  slide_6: string;
+  slide_7: string;
+  slide_character_limits: string; // Stored as text in DB
+}
+
+export interface Slide {
+  id?: string;
+  post_id?: string;
+  slide_index: number;
+  role: string;
+  text: string;
+}
+
+export interface MediaAsset {
+  id?: string;
+  post_id?: string;
+  slide_index: number | null; // null means global background
+  url: string;
+  type: 'image';
+}
+
+export interface Post {
   id: string;
   user_id: string;
-  name: string;
-  days: RoutineDay[];
+  content_type: ContentType;
+  input_text: string;
+  target_audience_override?: string;
+  short_caption: string;
+  long_description: string;
+  keyword_paragraph?: string;
+  hashtags: string; // stored as single string "#tag1 #tag2"
+  status: PostStatus;
+  created_at: string;
+  updated_at: string;
+  slides?: Slide[];
+  media_assets?: MediaAsset[];
 }
 
-export interface SessionSet {
-  id: string;
-  session_id: string;
-  set_number: number;
-  reps: number | '';
-  weight_lbs: number | '' | null; // Null if BodyWeight
-  completed: boolean;
-}
-
-export interface Session {
-  id: string;
-  user_id: string;
-  exercise_id: string;
-  status: SessionStatus;
-  started_at: string;
-  completed_at: string | null;
-  planned_sets: number;
-  sets: SessionSet[];
-  target_rep_min: number;
-  target_rep_max: number;
-}
-
-// For Onboarding Logic
-export interface StockRoutine {
-  id: string;
-  equipment: Equipment;
-  name: string;
-  days: Omit<RoutineDay, 'id' | 'routine_id'>[];
+// Helper types for AI generation responses
+export interface GeneratedContentResponse {
+  slides: { role: string; text: string }[];
+  caption: {
+    short: string;
+    long: string;
+    keywords?: string[]; // Array of strings from AI, converted to paragraph later
+    hashtags: string[];
+  };
 }

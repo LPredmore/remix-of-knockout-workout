@@ -3,125 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KnockOut</title>
-
-    <!-- Tailwind (CDN) -->
+    <title>ViralArc Creator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
             colors: {
-              brand: {
-                950: '#0a0a0f',
-                900: '#121218',
-                800: '#1c1c24',
-                700: '#2a2a35',
-                600: '#3d3d4a',
-                500: '#52525b',
-              },
-              accent: {
-                600: '#ea580c',
-                500: '#f97316',
-                400: '#fb923c',
-              },
-              success: {
-                600: '#059669',
-                500: '#10b981',
-                400: '#34d399',
-              },
+              background: '#09090b',
+              surface: '#18181b',
+              surfaceHighlight: '#27272a',
+              primary: '#3b82f6',
+              primaryHover: '#2563eb',
+              text: '#f4f4f5',
+              textMuted: '#a1a1aa',
+              border: '#27272a',
             },
             fontFamily: {
-              sans: ['Inter', 'system-ui', 'sans-serif'],
+              sans: ['Inter', 'sans-serif'],
             },
           },
         },
       }
     </script>
-
     <style>
-      /* Hide scrollbar for clean UI in lists */
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
+      body {
+        background-color: #09090b;
+        color: #f4f4f5;
       }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
       }
-      
-      /* Bottom sheet animation */
-      @keyframes slide-up {
-        from {
-          transform: translateY(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateY(0);
-          opacity: 1;
-        }
+      ::-webkit-scrollbar-track {
+        background: #18181b; 
       }
-      .animate-slide-up {
-        animation: slide-up 0.25s ease-out;
+      ::-webkit-scrollbar-thumb {
+        background: #3f3f46; 
+        border-radius: 4px;
       }
-
-      /* Energized Theme Utilities */
-      .glow-accent {
-        box-shadow: 0 0 20px rgba(249, 115, 22, 0.4), 0 0 40px rgba(249, 115, 22, 0.2);
-      }
-      .glow-accent-sm {
-        box-shadow: 0 0 12px rgba(249, 115, 22, 0.3);
-      }
-      .glow-success {
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.4), 0 0 40px rgba(16, 185, 129, 0.2);
-      }
-      .glow-success-sm {
-        box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);
-      }
-      
-      /* Gradient backgrounds */
-      .bg-gradient-warm {
-        background: linear-gradient(180deg, #1c1c24 0%, #121218 100%);
-      }
-      .bg-gradient-radial {
-        background: radial-gradient(ellipse at center top, rgba(249, 115, 22, 0.08) 0%, transparent 50%);
-      }
-      .bg-gradient-header {
-        background: linear-gradient(180deg, rgba(249, 115, 22, 0.1) 0%, transparent 100%);
-      }
-
-      /* Smooth transitions */
-      * {
-        transition-property: background-color, border-color, color, box-shadow;
-        transition-duration: 150ms;
-        transition-timing-function: ease-out;
-      }
-      
-      /* Text glow */
-      .text-glow-accent {
-        text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+      ::-webkit-scrollbar-thumb:hover {
+        background: #52525b; 
       }
     </style>
-
-    <!-- Import map (if you are intentionally using ESM CDN imports in some contexts) -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-          "react-router-dom": "https://esm.sh/react-router-dom@^7.10.1",
-          "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
-          "react/": "https://esm.sh/react@^19.2.3/",
-          "react": "https://esm.sh/react@^19.2.3",
-          "recharts": "https://esm.sh/recharts@^3.6.0",
-          "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.3"
-        }
-      }
-    </script>
-  </head>
-
-  <body class="bg-brand-900 text-slate-50 overflow-hidden fixed inset-0">
-    <div id="root" class="h-full w-full overflow-hidden"></div>
-
-    <!-- Vite entrypoint (REQUIRED). If your entry file is different, update this path. -->
-    <script type="module" src="/index.tsx"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.10.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.86.0",
+    "html-to-image": "https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
   </body>
 </html>
