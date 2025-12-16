@@ -1,11 +1,7 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
 import { ContentType, GeneratedContentResponse, UserSettings, ArcRules } from '../types';
 import { ARC_DEFINITIONS, CONSTRUCT_GUARDRAILS_BLOCK } from '../constants';
 
-// Initialize Gemini Client
-const apiKey = process.env.API_KEY || ''; 
-const ai = new GoogleGenAI({ apiKey });
+const SUPABASE_URL = 'https://pqnmgstlxmfkrnjyehkk.supabase.co';
 
 export const generatePostContent = async (
   contentType: ContentType,
@@ -68,65 +64,46 @@ export const generatePostContent = async (
        - Take the remaining 19 hashtags (Indices #2 through #20) from the Top 20 list you simulated.
        - REMOVE the '#' symbol from them.
        - These will be used to build the SEO keyword block.
+    
+    RESPONSE FORMAT:
+    You MUST respond with valid JSON in this exact structure:
+    {
+      "slides": [
+        { "role": "string", "text": "string" }
+      ],
+      "caption": {
+        "short": "string",
+        "long": "string",
+        "hashtags": ["string"],
+        "keywords": ["string"]
+      }
+    }
   `;
 
   const prompt = `
     Input Idea: "${idea}"
     
-    Generate the carousel content (slides) and caption.
+    Generate the carousel content (slides) and caption. Remember to respond with valid JSON only.
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            slides: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  role: { type: Type.STRING },
-                  text: { type: Type.STRING }
-                },
-                required: ["role", "text"]
-              }
-            },
-            caption: {
-              type: Type.OBJECT,
-              properties: {
-                short: { type: Type.STRING },
-                long: { type: Type.STRING },
-                keywords: { 
-                  type: Type.ARRAY, 
-                  items: { type: Type.STRING },
-                  description: "The 19 trending keywords derived from the TikTok list (excluding the #1 spot), without the '#' symbol."
-                },
-                hashtags: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                  description: "Exactly 5 hashtags: 1 Trending + 4 Evergreen."
-                }
-              },
-              required: ["short", "long", "hashtags", "keywords"]
-            }
-          },
-          required: ["slides", "caption"]
-        }
-      }
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ systemInstruction, prompt }),
     });
 
-    if (response.text) {
-      return JSON.parse(response.text) as GeneratedContentResponse;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate content');
     }
-    throw new Error("Empty response from Gemini");
+
+    const data = await response.json();
+    return data as GeneratedContentResponse;
   } catch (error) {
-    console.error("Gemini Generation Error:", error);
+    console.error("Content Generation Error:", error);
     throw error;
   }
 };
@@ -136,31 +113,22 @@ export const generateImage = async (
   aspectRatio: "1:1" | "9:16" | "16:9" = "1:1"
 ): Promise<string> => {
   try {
-    // Guidelines: Use gemini-2.5-flash-image for generation by default
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [{ text: prompt }]
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/generate-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      config: {
-        // Note: responseMimeType is not supported for nano banana series models
-      }
+      body: JSON.stringify({ prompt, aspectRatio }),
     });
 
-    // Iterate parts to find the image
-    const parts = response.candidates?.[0]?.content?.parts;
-    if (parts) {
-      for (const part of parts) {
-        if (part.inlineData) {
-          const base64Data = part.inlineData.data;
-          const mimeType = part.inlineData.mimeType || 'image/png';
-          return `data:${mimeType};base64,${base64Data}`;
-        }
-      }
+    const data = await response.json();
+    
+    if (data.imageUrl) {
+      return data.imageUrl;
     }
     
-    // Fallback/Error if no image found
-    console.warn("No image data found in response, returning placeholder");
+    // Fallback to placeholder
+    console.warn("No image URL in response, using placeholder");
     return `https://picsum.photos/1080/1080?random=${Math.random()}`;
     
   } catch (error) {
